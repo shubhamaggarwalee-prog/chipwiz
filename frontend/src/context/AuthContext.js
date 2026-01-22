@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/me`, {
+      const response = await axios.get(`${API_BASE}/auth/me`, {
         withCredentials: true
       });
       setUser(response.data);
@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post(`${API_URL}/api/auth/logout`, {}, {
+      await axios.post(`${API_BASE}/auth/logout`, {}, {
         withCredentials: true
       });
     } catch (error) {
