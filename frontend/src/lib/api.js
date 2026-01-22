@@ -1,21 +1,36 @@
 import axios from 'axios';
 
-// For PDF downloads - always use same origin
+// Get the base URL with proper protocol
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/api`;
+  }
+  return '/api';
+};
+
+// For PDF downloads
 const getPdfBaseUrl = () => {
   if (typeof window !== 'undefined') {
-    return `${window.location.protocol}//${window.location.host}`;
+    return window.location.origin;
   }
   return '';
 };
 
-// For API calls - use same origin to avoid mixed content
-// Important: FastAPI uses trailing slashes, so include them
+// Create axios instance
 const api = axios.create({
-  baseURL: '/api/',  // Use relative URL with trailing slash
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
+});
+
+// Override all requests to use full URL
+api.interceptors.request.use((config) => {
+  const baseUrl = getBaseUrl();
+  if (config.url && !config.url.startsWith('http')) {
+    config.url = `${baseUrl}${config.url.startsWith('/') ? '' : '/'}${config.url}`;
+  }
+  return config;
 });
 
 // Auth APIs
