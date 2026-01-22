@@ -1,0 +1,120 @@
+{
+  "identity": {
+    "name": "Semiconductor Intelligence Platform",
+    "persona": "E1 - The Anti-AI Designer",
+    "tone": "Authoritative, Precision, High-Tech, Clean",
+    "archetype": "The Performance Pro (Elite Engineering)",
+    "keywords": ["Intelligence", "Structure", "Clarity", "Depth"]
+  },
+  "typography": {
+    "primary_font": "Inter",
+    "secondary_font": "IBM Plex Sans",
+    "mono_font": "JetBrains Mono",
+    "scale": {
+      "h1": "text-4xl md:text-6xl font-semibold tracking-tight",
+      "h2": "text-3xl md:text-4xl font-medium tracking-tight",
+      "h3": "text-2xl font-medium tracking-normal",
+      "body": "text-base leading-relaxed text-slate-600 dark:text-slate-300",
+      "small": "text-sm font-medium text-slate-500 uppercase tracking-wider"
+    },
+    "imports": [
+      "@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');"
+    ]
+  },
+  "colors": {
+    "mode": "light",
+    "palette": {
+      "primary": "#0F172A",
+      "primary_foreground": "#F8FAFC",
+      "secondary": "#F1F5F9",
+      "secondary_foreground": "#0F172A",
+      "accent": "#006FEE",
+      "accent_foreground": "#FFFFFF",
+      "background": "#F8FAFC",
+      "surface": "#FFFFFF",
+      "border": "#E2E8F0",
+      "muted": "#64748B",
+      "success": "#10B981",
+      "warning": "#F59E0B",
+      "error": "#EF4444"
+    },
+    "gradients": {
+      "hero": "bg-gradient-to-b from-slate-50 to-white",
+      "subtle_glow": "bg-gradient-to-tr from-blue-50/50 to-slate-50/50"
+    }
+  },
+  "layout": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "spacing": {
+      "section": "py-24 md:py-32",
+      "component": "p-6 md:p-8"
+    },
+    "grid_systems": {
+      "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "encyclopedia": "grid grid-cols-1 lg:grid-cols-[280px_1fr_320px] gap-8",
+      "landing": "grid grid-cols-1 md:grid-cols-12 gap-8"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-slate-900 text-white hover:bg-slate-800 rounded-md px-6 py-3 font-medium transition-all shadow-sm hover:shadow-md",
+      "secondary": "bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 rounded-md px-6 py-3 font-medium transition-all",
+      "ghost": "text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md px-4 py-2 transition-colors"
+    },
+    "cards": {
+      "base": "bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300",
+      "glass": "bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm"
+    },
+    "inputs": {
+      "base": "bg-white border border-slate-200 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+    }
+  },
+  "visual_enhancers": {
+    "shadows": {
+      "soft": "shadow-[0_2px_8px_rgba(0,0,0,0.04)]",
+      "medium": "shadow-[0_8px_24px_rgba(0,0,0,0.08)]",
+      "glow": "shadow-[0_0_32px_rgba(0,111,238,0.12)]"
+    },
+    "borders": {
+      "subtle": "border border-slate-200",
+      "highlight": "border-l-4 border-blue-500"
+    },
+    "radius": {
+      "default": "rounded-lg",
+      "large": "rounded-xl",
+      "pill": "rounded-full"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "hover_lift": "hover:-translate-y-1",
+    "fade_in": "animate-in fade-in duration-500 slide-in-from-bottom-4"
+  },
+  "image_urls": {
+    "hero_bg": "https://images.unsplash.com/photo-1766855841547-b4ffef4b98e7?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "engineer_working": "https://images.unsplash.com/photo-1581093586267-784d0a92223d?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "chip_macro": "https://images.unsplash.com/photo-1731400800900-1bce57414c09?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "ai_visualization": "https://images.unsplash.com/photo-1735713212083-82eafc42bf64?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "clean_room": "https://images.unsplash.com/photo-1581091013158-5c7184f43b62?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "instructions_to_main_agent": [
+    "Implement the 'Encyclopedia' layout using a 3-column grid: Sidebar (Tree), Main (Content), Right (Context/Diagrams).",
+    "Use 'IBM Plex Sans' for all headings to give a technical, engineering feel.",
+    "Ensure the 'AI Assistant' feels like a premium tool - use the 'Tracing Beam' effect on the input container.",
+    "The Dashboard must be high-density. Use the 'Bento Grid Mode B' strategy.",
+    "Strictly follow the Light Mode default. Dark mode is a toggle.",
+    "Use the provided image URLs for the landing page and feature sections.",
+    "Do not use gradients for text. Keep text high-contrast and readable.",
+    "Use 'sonner' for all toast notifications.",
+    "Ensure all interactive elements have 'data-testid' attributes."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Avoid generic 'AI slop' aesthetics. No purple/teal gradients.",
+    "Use 2-3x more spacing than typical designs.",
+    "Every interaction needs micro-animations.",
+    "Never use AI assistant emojis (🤖, 🧠, etc.).",
+    "Prioritize Shadcn components but customize them to match the 'Performance Pro' archetype.",
+    "Components must use named exports.",
+    "Pages must use default exports."
+  ]
+}
