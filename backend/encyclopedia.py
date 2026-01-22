@@ -425,6 +425,37 @@ async def get_topic_by_slug(slug: str, difficulty: str = "intermediate"):
     return topic
 
 
+@router.get("/topics/{slug}/pdf")
+async def export_topic_pdf(slug: str, difficulty: str = "intermediate"):
+    """Export encyclopedia topic as PDF"""
+    from fastapi.responses import StreamingResponse
+    from pdf_export import generate_encyclopedia_pdf
+    
+    db = await get_db()
+    
+    topic = await db.encyclopedia_topics.find_one(
+        {"slug": slug},
+        {"_id": 0}
+    )
+    
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    
+    # Generate PDF
+    pdf_buffer = generate_encyclopedia_pdf(topic, difficulty)
+    
+    # Clean filename
+    filename = f"{slug}-{difficulty}.pdf"
+    
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+
 @router.get("/tree")
 async def get_knowledge_tree():
     """Get hierarchical knowledge tree structure"""
