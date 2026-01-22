@@ -166,11 +166,31 @@ class SemiconductorAPITester:
         """Test reports endpoints"""
         print("\n🔍 Testing Reports Endpoints...")
         
-        # This endpoint might not be implemented yet, so we expect 404 or similar
-        success, _ = self.test_api_endpoint("Reports List", "GET", "reports/", expected_status=404)
-        if not success:
-            # Try alternative status codes that might be valid
-            self.test_api_endpoint("Reports List (Alt)", "GET", "reports/", expected_status=200)
+        # Test reports list
+        success, reports_data = self.test_api_endpoint("Reports List", "GET", "reports/", expected_status=200)
+        
+        # Test report types
+        self.test_api_endpoint("Report Types", "GET", "reports/types", expected_status=200)
+        
+        # Test PDF export for reports (if reports exist)
+        if success and reports_data and isinstance(reports_data, dict) and reports_data.get('data'):
+            reports = reports_data['data']
+            if reports and len(reports) > 0:
+                first_report_slug = reports[0].get('slug')
+                if first_report_slug:
+                    # Test PDF download endpoint
+                    pdf_url = f"{self.base_url}/api/reports/{first_report_slug}/pdf"
+                    try:
+                        pdf_response = self.session.get(pdf_url)
+                        if pdf_response.status_code == 200 and pdf_response.headers.get('content-type') == 'application/pdf':
+                            self.log_result("Report PDF Export", True, f"PDF generated successfully ({len(pdf_response.content)} bytes)")
+                        else:
+                            self.log_result("Report PDF Export", False, f"Status: {pdf_response.status_code}, Content-Type: {pdf_response.headers.get('content-type')}")
+                    except Exception as e:
+                        self.log_result("Report PDF Export", False, f"Exception: {str(e)}")
+        
+        # Test specific report
+        self.test_api_endpoint("Specific Report", "GET", "reports/sample-report", expected_status=404)
 
     def test_auth_endpoints(self):
         """Test authentication endpoints"""
