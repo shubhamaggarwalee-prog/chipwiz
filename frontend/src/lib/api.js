@@ -1,19 +1,16 @@
 import axios from 'axios';
 
-// Get API URL with proper protocol
-const getApiUrl = () => {
-  // In production, always use HTTPS
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    return `https://${window.location.host}`;
+// For PDF downloads - always use same origin
+const getPdfBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.host}`;
   }
-  // In development, use env variable or fallback
-  return process.env.REACT_APP_BACKEND_URL || '';
+  return '';
 };
 
-const API_URL = getApiUrl();
-
+// For API calls - use same origin to avoid mixed content
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: '/api',  // Use relative URL
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
@@ -34,7 +31,7 @@ export const encyclopediaApi = {
   getTopic: (slug, difficulty) => api.get(`/encyclopedia/topics/${slug}`, { params: { difficulty } }),
   getTree: () => api.get('/encyclopedia/tree'),
   search: (q) => api.get('/encyclopedia/search', { params: { q } }),
-  downloadPdf: (slug, difficulty) => `${API_URL}/api/encyclopedia/topics/${slug}/pdf?difficulty=${difficulty}`
+  downloadPdf: (slug, difficulty) => `${getPdfBaseUrl()}/api/encyclopedia/topics/${slug}/pdf?difficulty=${difficulty}`
 };
 
 // News APIs
@@ -66,7 +63,7 @@ export const reportsApi = {
   getTypes: () => api.get('/reports/types'),
   getReport: (slug) => api.get(`/reports/${slug}`),
   generateReport: (topic, type) => api.post('/reports/generate', null, { params: { topic, report_type: type } }),
-  downloadPdf: (slug) => `${API_URL}/api/reports/${slug}/pdf`
+  downloadPdf: (slug) => `${getPdfBaseUrl()}/api/reports/${slug}/pdf`
 };
 
 // Subscriptions APIs
