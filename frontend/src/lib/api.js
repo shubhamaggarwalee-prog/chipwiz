@@ -9,8 +9,9 @@ const getPdfBaseUrl = () => {
 };
 
 // For API calls - use same origin to avoid mixed content
+// Important: FastAPI uses trailing slashes, so include them
 const api = axios.create({
-  baseURL: '/api',  // Use relative URL
+  baseURL: '/api/',  // Use relative URL with trailing slash
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
