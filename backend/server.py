@@ -7,7 +7,9 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import asyncio
 from pathlib import Path
+from contextlib import asynccontextmanager
 
 # Load environment variables
 ROOT_DIR = Path(__file__).parent
@@ -25,59 +27,44 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create FastAPI app
-app = FastAPI(
-    title="Semiconductor Intelligence Platform",
-    description="AI-powered semiconductor knowledge and research platform",
-    version="1.0.0"
-)
-
-# Create main API router
-api_router = APIRouter(prefix="/api")
+# Background task handle
+scheduler_task = None
 
 
-# Health check
-@api_router.get("/")
-async def root():
-    return {"message": "Semiconductor Intelligence Platform API", "status": "healthy"}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan management"""
+    global scheduler_task
+    
+    logger.info("Starting application...")
+    
+    # Initialize database indexes
+    await create_indexes()
+    
+    # Seed expanded encyclopedia content
+    await seed_expanded_content()
+    
+    # Start background scheduler
+    from scheduler import run_scheduler
+    scheduler_task = asyncio.create_task(run_scheduler(db))
+    logger.info("Background scheduler started")
+    
+    yield
+    
+    # Cleanup
+    if scheduler_task:
+        scheduler_task.cancel()
+        try:
+            await scheduler_task
+        except asyncio.CancelledError:
+            pass
+    
+    client.close()
+    logger.info("Application shutdown complete")
 
 
-@api_router.get("/health")
-async def health_check():
-    return {"status": "healthy", "database": "connected"}
-
-
-# Import and include routers
-from auth import router as auth_router
-from encyclopedia import router as encyclopedia_router
-from news_routes import router as news_router
-from ai_assistant import router as assistant_router
-from reports import router as reports_router
-from subscriptions import router as subscriptions_router
-
-api_router.include_router(auth_router)
-api_router.include_router(encyclopedia_router)
-api_router.include_router(news_router)
-api_router.include_router(assistant_router)
-api_router.include_router(reports_router)
-api_router.include_router(subscriptions_router)
-
-# Include API router
-app.include_router(api_router)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database indexes on startup"""
+async def create_indexes():
+    """Initialize database indexes"""
     logger.info("Creating database indexes...")
     
     try:
@@ -117,8 +104,80 @@ async def startup_event():
         logger.error(f"Error creating indexes: {e}")
 
 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    """Close MongoDB connection on shutdown"""
-    client.close()
-    logger.info("Database connection closed")
+async def seed_expanded_content():
+    """Seed expanded encyclopedia topics"""
+    from expanded_content import get_expanded_topics
+    from datetime import datetime, timezone
+    
+    try:
+        expanded_topics = get_expanded_topics()
+        for topic in expanded_topics:
+            existing = await db.encyclopedia_topics.find_one(
+                {"topic_id": topic["topic_id"]},
+                {"_id": 0}
+            )
+            if not existing:
+                topic["created_at"] = datetime.now(timezone.utc).isoformat()
+                topic["updated_at"] = datetime.now(timezone.utc).isoformat()
+                await db.encyclopedia_topics.insert_one(topic)
+                logger.info(f"Seeded topic: {topic['title']}")
+        
+        logger.info(f"Encyclopedia content seeding complete - {len(expanded_topics)} topics checked")
+    except Exception as e:
+        logger.error(f"Error seeding content: {e}")
+
+
+# Create FastAPI app with lifespan
+app = FastAPI(
+    title="Semiconductor Intelligence Platform",
+    description="AI-powered semiconductor knowledge and research platform",
+    version="1.0.0",
+    lifespan=lifespan
+)
+
+# Create main API router
+api_router = APIRouter(prefix="/api")
+
+
+# Health check
+@api_router.get("/")
+async def root():
+    return {"message": "Semiconductor Intelligence Platform API", "status": "healthy"}
+
+
+@api_router.get("/health")
+async def health_check():
+    from scheduler import get_job_status
+    return {
+        "status": "healthy", 
+        "database": "connected",
+        "scheduler": get_job_status()
+    }
+
+
+# Import and include routers
+from auth import router as auth_router
+from encyclopedia import router as encyclopedia_router
+from news_routes import router as news_router
+from ai_assistant import router as assistant_router
+from reports import router as reports_router
+from subscriptions import router as subscriptions_router
+
+api_router.include_router(auth_router)
+api_router.include_router(encyclopedia_router)
+api_router.include_router(news_router)
+api_router.include_router(assistant_router)
+api_router.include_router(reports_router)
+api_router.include_router(subscriptions_router)
+
+# Include API router
+app.include_router(api_router)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
