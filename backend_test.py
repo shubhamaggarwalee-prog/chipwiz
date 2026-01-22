@@ -106,9 +106,11 @@ class SemiconductorAPITester:
         
         # Validate expanded content - should have 19 topics across 10 categories
         if success and tree_data:
+            # Handle both direct list and wrapped response
+            tree_list = tree_data if isinstance(tree_data, list) else tree_data.get('data', [])
             total_topics = 0
-            categories_count = len(tree_data.get('data', []))
-            for category in tree_data.get('data', []):
+            categories_count = len(tree_list)
+            for category in tree_list:
                 total_topics += len(category.get('topics', []))
             
             if total_topics >= 19:
