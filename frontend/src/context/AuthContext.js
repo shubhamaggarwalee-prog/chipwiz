@@ -12,17 +12,8 @@ const AuthContext = createContext({
 
 export const useAuth = () => useContext(AuthContext);
 
-// Get API URL with proper protocol
-const getApiUrl = () => {
-  // In production, always use HTTPS
-  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
-    return `https://${window.location.host}`;
-  }
-  // In development, use env variable or fallback
-  return process.env.REACT_APP_BACKEND_URL || '';
-};
-
-const API_URL = getApiUrl();
+// Use relative URL to avoid mixed content issues
+const API_BASE = '/api';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
