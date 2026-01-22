@@ -280,6 +280,44 @@ async def get_report(slug: str, req: Request):
     return report
 
 
+@router.get("/{slug}/pdf")
+async def export_report_pdf(slug: str, req: Request):
+    """Export report as PDF"""
+    from fastapi.responses import StreamingResponse
+    from pdf_export import generate_report_pdf
+    from auth import get_current_user_from_request
+    
+    db = await get_db()
+    
+    report = await db.research_reports.find_one(
+        {"slug": slug},
+        {"_id": 0}
+    )
+    
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+    
+    # Check premium access
+    if report.get("premium_only"):
+        user = await get_current_user_from_request(req)
+        if not user or user.get("role") not in ["premium", "admin"]:
+            raise HTTPException(status_code=403, detail="Premium subscription required")
+    
+    # Generate PDF
+    pdf_buffer = generate_report_pdf(report)
+    
+    # Clean filename
+    filename = f"{slug}.pdf"
+    
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+    )
+
+
 @router.post("/generate")
 async def generate_report(
     topic: str,
