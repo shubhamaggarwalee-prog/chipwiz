@@ -175,7 +175,7 @@ def generate_report_pdf(report: Dict[str, Any]) -> BytesIO:
         # Split by paragraphs and add each
         for para in exec_summary.split('\n\n'):
             if para.strip():
-                story.append(Paragraph(para.strip(), styles['BodyText']))
+                story.append(Paragraph(para.strip(), styles['ReportBody']))
     
     story.append(Spacer(1, 0.3*inch))
     
@@ -200,16 +200,16 @@ def generate_report_pdf(report: Dict[str, Any]) -> BytesIO:
                     story.append(Paragraph(line[4:], styles['SubsectionTitle']))
                 # Handle bullet points
                 elif line.startswith('- '):
-                    story.append(Paragraph(f"• {line[2:]}", styles['BodyText']))
+                    story.append(Paragraph(f"• {line[2:]}", styles['ReportBody']))
                 # Handle tables (simplified)
                 elif line.startswith('| '):
                     # Skip table formatting for now, just show as text
-                    story.append(Paragraph(line.replace('|', ' | '), styles['BodyText']))
+                    story.append(Paragraph(line.replace('|', ' | '), styles['ReportBody']))
                 # Regular paragraph
                 elif line.startswith('**') and line.endswith('**'):
-                    story.append(Paragraph(f"<b>{line[2:-2]}</b>", styles['BodyText']))
+                    story.append(Paragraph(f"<b>{line[2:-2]}</b>", styles['ReportBody']))
                 else:
-                    story.append(Paragraph(line, styles['BodyText']))
+                    story.append(Paragraph(line, styles['ReportBody']))
         
         story.append(Spacer(1, 0.2*inch))
     
@@ -220,7 +220,7 @@ def generate_report_pdf(report: Dict[str, Any]) -> BytesIO:
         story.append(Paragraph("Data Sources", styles['SectionTitle']))
         
         for source in data_sources:
-            story.append(Paragraph(f"• {source}", styles['BodyText']))
+            story.append(Paragraph(f"• {source}", styles['ReportBody']))
         
         story.append(Spacer(1, 0.3*inch))
     
@@ -230,7 +230,7 @@ def generate_report_pdf(report: Dict[str, Any]) -> BytesIO:
         story.append(Paragraph("Key Assumptions", styles['SectionTitle']))
         
         for assumption in assumptions:
-            story.append(Paragraph(f"• {assumption}", styles['BodyText']))
+            story.append(Paragraph(f"• {assumption}", styles['ReportBody']))
         
         story.append(Spacer(1, 0.3*inch))
     
@@ -240,7 +240,7 @@ def generate_report_pdf(report: Dict[str, Any]) -> BytesIO:
         story.append(Paragraph("Risks & Unknowns", styles['SectionTitle']))
         
         for risk in risks:
-            story.append(Paragraph(f"• {risk}", styles['BodyText']))
+            story.append(Paragraph(f"• {risk}", styles['ReportBody']))
         
         story.append(Spacer(1, 0.3*inch))
     
@@ -326,7 +326,7 @@ def generate_encyclopedia_pdf(topic: Dict[str, Any], difficulty: str = "intermed
     
     # Overview
     story.append(Paragraph("Overview", styles['SectionTitle']))
-    story.append(Paragraph(topic.get('overview', ''), styles['BodyText']))
+    story.append(Paragraph(topic.get('overview', ''), styles['ReportBody']))
     story.append(Spacer(1, 0.3*inch))
     
     # Content based on difficulty
@@ -341,14 +341,14 @@ def generate_encyclopedia_pdf(topic: Dict[str, Any], difficulty: str = "intermed
                 if para.strip().startswith('**') and para.strip().endswith('**'):
                     story.append(Paragraph(f"<b>{para.strip()[2:-2]}</b>", styles['SubsectionTitle']))
                 else:
-                    story.append(Paragraph(para.strip(), styles['BodyText']))
+                    story.append(Paragraph(para.strip(), styles['ReportBody']))
     
     # Applications
     applications = topic.get('applications', [])
     if applications:
         story.append(Paragraph("Applications", styles['SectionTitle']))
         for app in applications:
-            story.append(Paragraph(f"• {app}", styles['BodyText']))
+            story.append(Paragraph(f"• {app}", styles['ReportBody']))
     
     # Advantages & Limitations
     advantages = topic.get('advantages', [])
@@ -357,12 +357,12 @@ def generate_encyclopedia_pdf(topic: Dict[str, Any], difficulty: str = "intermed
     if advantages:
         story.append(Paragraph("Advantages", styles['SectionTitle']))
         for adv in advantages:
-            story.append(Paragraph(f"• {adv}", styles['BodyText']))
+            story.append(Paragraph(f"• {adv}", styles['ReportBody']))
     
     if limitations:
         story.append(Paragraph("Limitations", styles['SectionTitle']))
         for lim in limitations:
-            story.append(Paragraph(f"• {lim}", styles['BodyText']))
+            story.append(Paragraph(f"• {lim}", styles['ReportBody']))
     
     # References
     references = topic.get('references', [])
