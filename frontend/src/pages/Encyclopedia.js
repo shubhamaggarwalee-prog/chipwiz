@@ -248,6 +248,19 @@ const Encyclopedia = () => {
                         </button>
                       ))}
                     </div>
+                    
+                    {/* PDF Download Button */}
+                    <a 
+                      href={encyclopediaApi.downloadPdf(topic.slug, difficulty)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-4"
+                    >
+                      <Button variant="outline" size="sm" className="gap-2" data-testid="download-topic-pdf">
+                        <Download className="h-4 w-4" />
+                        PDF
+                      </Button>
+                    </a>
                   </div>
                 </div>
 
