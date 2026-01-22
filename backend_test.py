@@ -93,6 +93,18 @@ class SemiconductorAPITester:
         # Get knowledge tree
         success, tree_data = self.test_api_endpoint("Encyclopedia Tree", "GET", "encyclopedia/tree")
         
+        # Validate expanded content - should have 19 topics across 10 categories
+        if success and tree_data:
+            total_topics = 0
+            categories_count = len(tree_data.get('data', []))
+            for category in tree_data.get('data', []):
+                total_topics += len(category.get('topics', []))
+            
+            if total_topics >= 19:
+                self.log_result("Encyclopedia Expanded Content", True, f"Found {total_topics} topics across {categories_count} categories")
+            else:
+                self.log_result("Encyclopedia Expanded Content", False, f"Expected 19+ topics, found {total_topics}")
+        
         # Get categories
         success, categories = self.test_api_endpoint("Encyclopedia Categories", "GET", "encyclopedia/categories")
         
@@ -108,6 +120,29 @@ class SemiconductorAPITester:
         
         # Test specific topic
         self.test_api_endpoint("EUV Topic", "GET", "encyclopedia/topics/euv-lithography")
+        
+        # Test new expanded topics
+        new_topics = [
+            "duv-lithography", "photoresist-technology", "plasma-etching", 
+            "thin-film-deposition", "semiconductor-yield", "chiplet-architecture",
+            "hybrid-bonding", "high-bandwidth-memory", "silicon-substrates",
+            "silicon-carbide", "gallium-nitride", "2nm-process-node",
+            "3nm-process-node", "backside-power-delivery"
+        ]
+        
+        for topic_slug in new_topics[:5]:  # Test first 5 to avoid too many requests
+            self.test_api_endpoint(f"New Topic: {topic_slug}", "GET", f"encyclopedia/topics/{topic_slug}")
+        
+        # Test PDF export for encyclopedia topics
+        pdf_url = f"{self.base_url}/api/encyclopedia/topics/euv-lithography/pdf"
+        try:
+            pdf_response = self.session.get(pdf_url, params={"difficulty": "intermediate"})
+            if pdf_response.status_code == 200 and pdf_response.headers.get('content-type') == 'application/pdf':
+                self.log_result("Encyclopedia PDF Export", True, f"PDF generated successfully ({len(pdf_response.content)} bytes)")
+            else:
+                self.log_result("Encyclopedia PDF Export", False, f"Status: {pdf_response.status_code}, Content-Type: {pdf_response.headers.get('content-type')}")
+        except Exception as e:
+            self.log_result("Encyclopedia PDF Export", False, f"Exception: {str(e)}")
         
         # Test search
         self.test_api_endpoint("Encyclopedia Search", "GET", "encyclopedia/search", 
