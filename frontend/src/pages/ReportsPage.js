@@ -109,6 +109,21 @@ const ReportsPage = () => {
                   {new Date(selectedReport.created_at).toLocaleDateString()}
                 </span>
               </div>
+              
+              {/* PDF Download Button */}
+              <div className="mt-6">
+                <a 
+                  href={reportsApi.downloadPdf(selectedReport.slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex"
+                >
+                  <Button className="gap-2" data-testid="download-pdf-btn">
+                    <Download className="h-4 w-4" />
+                    Download PDF
+                  </Button>
+                </a>
+              </div>
             </div>
 
             {/* Executive Summary */}
