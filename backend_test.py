@@ -83,8 +83,19 @@ class SemiconductorAPITester:
         # Root API endpoint
         self.test_api_endpoint("API Root", "GET", "")
         
-        # Health check
-        self.test_api_endpoint("Health Check", "GET", "health")
+        # Health check - should show scheduler status
+        success, health_data = self.test_api_endpoint("Health Check", "GET", "health")
+        
+        # Validate scheduler status in health check
+        if success and health_data:
+            if 'scheduler' in health_data:
+                scheduler_status = health_data['scheduler']
+                if isinstance(scheduler_status, dict) and 'news_scrape' in scheduler_status:
+                    self.log_result("Scheduler Status Check", True, f"Scheduler running: {scheduler_status['news_scrape'].get('status', 'unknown')}")
+                else:
+                    self.log_result("Scheduler Status Check", False, "Scheduler status not found in health response")
+            else:
+                self.log_result("Scheduler Status Check", False, "No scheduler field in health response")
 
     def test_encyclopedia_endpoints(self):
         """Test encyclopedia API endpoints"""
