@@ -18,7 +18,8 @@ import {
   Building,
   ShieldCheck,
   Microscope,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react';
 
 const iconMap = {
