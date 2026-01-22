@@ -54,7 +54,8 @@ export const reportsApi = {
   getReports: (params) => api.get('/reports', { params }),
   getTypes: () => api.get('/reports/types'),
   getReport: (slug) => api.get(`/reports/${slug}`),
-  generateReport: (topic, type) => api.post('/reports/generate', null, { params: { topic, report_type: type } })
+  generateReport: (topic, type) => api.post('/reports/generate', null, { params: { topic, report_type: type } }),
+  downloadPdf: (slug) => `${API_URL}/api/reports/${slug}/pdf`
 };
 
 // Subscriptions APIs
