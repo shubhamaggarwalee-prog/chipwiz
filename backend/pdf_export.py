@@ -152,8 +152,8 @@ def generate_report_pdf(report: Dict[str, Any]) -> BytesIO:
         except:
             created_at = datetime.now(timezone.utc)
     
-    story.append(Paragraph(f"<b>Author:</b> {author}", styles['BodyText']))
-    story.append(Paragraph(f"<b>Date:</b> {created_at.strftime('%B %d, %Y')}", styles['BodyText']))
+    story.append(Paragraph(f"<b>Author:</b> {author}", styles['ReportBody']))
+    story.append(Paragraph(f"<b>Date:</b> {created_at.strftime('%B %d, %Y')}", styles['ReportBody']))
     story.append(Spacer(1, 2*inch))
     
     # Disclaimer on title page
