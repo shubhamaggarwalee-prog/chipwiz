@@ -65,9 +65,9 @@ def create_styles():
         textColor=colors.HexColor('#334155')
     ))
     
-    # Body text styles
+    # Body text styles - use custom name to avoid conflict
     styles.add(ParagraphStyle(
-        name='BodyText',
+        name='ReportBody',
         parent=styles['Normal'],
         fontSize=11,
         leading=16,
