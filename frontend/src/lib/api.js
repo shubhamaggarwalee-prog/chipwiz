@@ -23,7 +23,8 @@ export const encyclopediaApi = {
   getTopics: (params) => api.get('/encyclopedia/topics', { params }),
   getTopic: (slug, difficulty) => api.get(`/encyclopedia/topics/${slug}`, { params: { difficulty } }),
   getTree: () => api.get('/encyclopedia/tree'),
-  search: (q) => api.get('/encyclopedia/search', { params: { q } })
+  search: (q) => api.get('/encyclopedia/search', { params: { q } }),
+  downloadPdf: (slug, difficulty) => `${API_URL}/api/encyclopedia/topics/${slug}/pdf?difficulty=${difficulty}`
 };
 
 // News APIs
