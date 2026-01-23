@@ -27,11 +27,11 @@ print('User ID: ' + userId);
 ## Step 2: Test Backend API
 ```bash
 # Test auth endpoint
-curl -X GET "https://chip-knowledge.preview.emergentagent.com/api/auth/me" \
+curl -X GET "https://chipwiz.preview.emergentagent.com/api/auth/me" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 
 # Test protected endpoints
-curl -X GET "https://chip-knowledge.preview.emergentagent.com/api/subscriptions" \
+curl -X GET "https://chipwiz.preview.emergentagent.com/api/subscriptions" \
   -H "Authorization: Bearer YOUR_SESSION_TOKEN"
 ```
 
@@ -47,7 +47,7 @@ await page.context.add_cookies([{
     "secure": true,
     "sameSite": "None"
 }]);
-await page.goto("https://chip-knowledge.preview.emergentagent.com/dashboard");
+await page.goto("https://chipwiz.preview.emergentagent.com/dashboard");
 ```
 
 ## Quick Debug

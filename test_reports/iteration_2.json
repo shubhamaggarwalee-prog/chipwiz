@@ -13,7 +13,7 @@
       {
         "component": "Reports Page API Integration",
         "issue": "Mixed content security error - frontend making HTTP requests to HTTPS backend",
-        "error_details": "Mixed Content: The page at 'https://chip-knowledge.preview.emergentagent.com/reports' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint 'http://chip-knowledge.preview.emergentagent.com/api/reports/'",
+        "error_details": "Mixed Content: The page at 'https://chipwiz.preview.emergentagent.com/reports' was loaded over HTTPS, but requested an insecure XMLHttpRequest endpoint 'http://chip-knowledge.preview.emergentagent.com/api/reports/'",
         "impact": "Reports page shows 'No reports available' despite backend having reports",
         "affected_selectors": ["Reports API calls"],
         "fix_priority": "CRITICAL"
