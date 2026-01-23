@@ -178,6 +178,7 @@ from news_routes import router as news_router
 from ai_assistant import router as assistant_router
 from reports import router as reports_router
 from subscriptions import router as subscriptions_router
+from preferences import router as preferences_router
 
 api_router.include_router(auth_router)
 api_router.include_router(encyclopedia_router)
@@ -185,6 +186,7 @@ api_router.include_router(news_router)
 api_router.include_router(assistant_router)
 api_router.include_router(reports_router)
 api_router.include_router(subscriptions_router)
+api_router.include_router(preferences_router)
 
 # Include API router
 app.include_router(api_router)
