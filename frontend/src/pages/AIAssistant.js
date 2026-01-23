@@ -12,8 +12,135 @@ import {
   ChevronRight,
   Lightbulb,
   ExternalLink,
-  Loader2
+  Loader2,
+  Scale
 } from 'lucide-react';
+
+// Simple markdown renderer for AI responses
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  
+  const lines = text.split('\n');
+  const elements = [];
+  let inTable = false;
+  let tableRows = [];
+  let tableHeaders = [];
+  
+  const processLine = (line, index) => {
+    // Table detection
+    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+      if (!inTable) {
+        inTable = true;
+        tableHeaders = line.split('|').filter(cell => cell.trim()).map(cell => cell.trim());
+        return null;
+      }
+      
+      // Skip separator row
+      if (line.includes('---')) {
+        return null;
+      }
+      
+      tableRows.push(line.split('|').filter(cell => cell.trim()).map(cell => cell.trim()));
+      return null;
+    } else if (inTable) {
+      // End of table
+      const tableElement = (
+        <div key={`table-${index}`} className="overflow-x-auto my-4">
+          <table className="min-w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-slate-100 dark:bg-slate-800">
+                {tableHeaders.map((header, i) => (
+                  <th key={i} className="border border-slate-200 dark:border-slate-700 px-3 py-2 text-left font-semibold">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map((row, rowIdx) => (
+                <tr key={rowIdx} className={rowIdx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'}>
+                  {row.map((cell, cellIdx) => (
+                    <td key={cellIdx} className="border border-slate-200 dark:border-slate-700 px-3 py-2">
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      inTable = false;
+      tableRows = [];
+      tableHeaders = [];
+      elements.push(tableElement);
+    }
+    
+    // Headers
+    if (line.startsWith('## ')) {
+      return <h2 key={index} className="text-lg font-semibold mt-6 mb-3 text-slate-900 dark:text-white">{line.replace('## ', '')}</h2>;
+    }
+    if (line.startsWith('### ')) {
+      return <h3 key={index} className="text-base font-medium mt-4 mb-2 text-slate-800 dark:text-slate-200">{line.replace('### ', '')}</h3>;
+    }
+    
+    // Bold text
+    let processedLine = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    
+    // Lists
+    if (line.trim().startsWith('- ')) {
+      return (
+        <li key={index} className="ml-4 mb-1" dangerouslySetInnerHTML={{ __html: processedLine.replace(/^-\s*/, '') }} />
+      );
+    }
+    
+    // Regular paragraph
+    if (line.trim()) {
+      return <p key={index} className="mb-3" dangerouslySetInnerHTML={{ __html: processedLine }} />;
+    }
+    
+    return null;
+  };
+  
+  lines.forEach((line, index) => {
+    const element = processLine(line, index);
+    if (element) {
+      elements.push(element);
+    }
+  });
+  
+  // Handle table at end of content
+  if (inTable && tableRows.length > 0) {
+    elements.push(
+      <div key="table-final" className="overflow-x-auto my-4">
+        <table className="min-w-full border-collapse text-sm">
+          <thead>
+            <tr className="bg-slate-100 dark:bg-slate-800">
+              {tableHeaders.map((header, i) => (
+                <th key={i} className="border border-slate-200 dark:border-slate-700 px-3 py-2 text-left font-semibold">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tableRows.map((row, rowIdx) => (
+              <tr key={rowIdx} className={rowIdx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/50'}>
+                {row.map((cell, cellIdx) => (
+                  <td key={cellIdx} className="border border-slate-200 dark:border-slate-700 px-3 py-2">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  
+  return <div className="prose-content">{elements}</div>;
+};
 
 const AIAssistant = () => {
   const { isAuthenticated } = useAuth();
