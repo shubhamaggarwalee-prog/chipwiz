@@ -108,11 +108,104 @@ async def search_knowledge_base(db, query: str, limit: int = 5) -> List[Dict]:
     return results
 
 
-async def generate_follow_up_questions(response: str) -> List[str]:
+def detect_comparison_query(message: str) -> tuple[bool, Optional[tuple[str, str]]]:
+    """
+    Detect if a message is a comparison query and extract the items being compared.
+    Returns (is_comparison, (item1, item2) or None)
+    """
+    message_lower = message.lower()
+    
+    # Comparison patterns
+    comparison_patterns = [
+        r'compare\s+(.+?)\s+(?:vs\.?|versus|and|with|to)\s+(.+?)(?:\?|$|\.|\s+for)',
+        r'(.+?)\s+(?:vs\.?|versus)\s+(.+?)(?:\?|$|\.)',
+        r'difference(?:s)?\s+between\s+(.+?)\s+and\s+(.+?)(?:\?|$|\.)',
+        r'(.+?)\s+or\s+(.+?)\s+(?:for|which|what)',
+        r'which\s+is\s+better[,:]?\s+(.+?)\s+or\s+(.+?)(?:\?|$)',
+        r'(.+?)\s+compared\s+to\s+(.+?)(?:\?|$|\.)',
+    ]
+    
+    for pattern in comparison_patterns:
+        match = re.search(pattern, message_lower, re.IGNORECASE)
+        if match:
+            item1 = match.group(1).strip()
+            item2 = match.group(2).strip()
+            # Clean up items
+            item1 = re.sub(r'\b(the|a|an)\s+', '', item1).strip()
+            item2 = re.sub(r'\b(the|a|an)\s+', '', item2).strip()
+            if len(item1) > 2 and len(item2) > 2:
+                return True, (item1, item2)
+    
+    return False, None
+
+
+def get_comparison_system_prompt(item1: str, item2: str, difficulty: str) -> str:
+    """Generate a specialized system prompt for comparison queries"""
+    difficulty_tone = {
+        "beginner": "Use simple language and analogies. Define technical terms.",
+        "intermediate": "Use technical language but explain complex concepts.",
+        "expert": "Provide deep technical analysis with specific parameters and metrics."
+    }
+    
+    return f"""You are an expert semiconductor research assistant specializing in technology comparisons.
+
+Your task is to compare {item1} vs {item2}.
+
+{difficulty_tone.get(difficulty, difficulty_tone["intermediate"])}
+
+CRITICAL: Structure your response EXACTLY as follows (use these exact headers):
+
+## Summary
+[2-3 sentence executive summary of the key differences]
+
+## Comparison Table
+| Aspect | {item1.title()} | {item2.title()} |
+|--------|-------|-------|
+| Architecture | [details] | [details] |
+| Performance | [details] | [details] |
+| Power Efficiency | [details] | [details] |
+| Manufacturing | [details] | [details] |
+| Maturity/Availability | [details] | [details] |
+| Key Applications | [details] | [details] |
+
+## {item1.title()} Advantages
+- [Advantage 1]
+- [Advantage 2]
+- [Advantage 3]
+
+## {item2.title()} Advantages
+- [Advantage 1]
+- [Advantage 2]
+- [Advantage 3]
+
+## Manufacturing Implications
+[Analysis of manufacturing challenges, yield considerations, and production readiness for each technology]
+
+## Recommendation
+[When to choose each technology based on use case]
+
+IMPORTANT RULES:
+1. Cite sources as [Source: description] where applicable
+2. Be objective - present facts for both technologies
+3. If information is uncertain or speculative, note it clearly
+4. Use only public, legally accessible information
+5. Include specific numbers/metrics where available"""
+
+
+async def generate_follow_up_questions(response: str, is_comparison: bool = False) -> List[str]:
     """Generate relevant follow-up questions based on the response"""
-    # Simple heuristic-based follow-up generation
     questions = []
     
+    if is_comparison:
+        # Comparison-specific follow-ups
+        questions = [
+            "What are the cost implications of each approach?",
+            "Which technology has better long-term scaling potential?",
+            "How do these technologies impact chip design methodology?"
+        ]
+        return questions
+    
+    # Standard keyword-based follow-up generation
     keywords = {
         "euv": ["What are the stochastic effects in EUV lithography?", "How does high-NA EUV improve resolution?"],
         "finfet": ["How do FinFETs compare to planar transistors?", "What are the scaling limits of FinFET technology?"],
