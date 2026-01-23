@@ -110,6 +110,7 @@ async def seed_expanded_content():
     from additional_topics import get_additional_topics
     from extended_topics_p2 import get_extended_topics_part2
     from extended_topics_p3 import get_extended_topics_part3
+    from extended_topics_p4 import get_extended_topics_part4
     from datetime import datetime, timezone
     
     try:
@@ -117,7 +118,8 @@ async def seed_expanded_content():
             ("expanded", get_expanded_topics()),
             ("additional", get_additional_topics()),
             ("extended_p2", get_extended_topics_part2()),
-            ("extended_p3", get_extended_topics_part3())
+            ("extended_p3", get_extended_topics_part3()),
+            ("extended_p4", get_extended_topics_part4())
         ]
         
         total_seeded = 0
