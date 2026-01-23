@@ -1,36 +1,13 @@
 import axios from 'axios';
 
-// Get the base URL with proper protocol
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    return `${window.location.origin}/api`;
-  }
-  return '/api';
-};
-
-// For PDF downloads
-const getPdfBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
-  return '';
-};
-
-// Create axios instance
+// Create axios instance with relative base URL
+// Relative URLs will automatically use the current protocol (https)
 const api = axios.create({
+  baseURL: '/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json'
   }
-});
-
-// Override all requests to use full URL
-api.interceptors.request.use((config) => {
-  const baseUrl = getBaseUrl();
-  if (config.url && !config.url.startsWith('http')) {
-    config.url = `${baseUrl}${config.url.startsWith('/') ? '' : '/'}${config.url}`;
-  }
-  return config;
 });
 
 // Auth APIs
