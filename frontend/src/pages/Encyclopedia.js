@@ -19,7 +19,9 @@ import {
   ShieldCheck,
   Microscope,
   ExternalLink,
-  Download
+  Download,
+  Database,
+  Rocket
 } from 'lucide-react';
 
 const iconMap = {
@@ -32,7 +34,9 @@ const iconMap = {
   'trending-down': TrendingDown,
   building: Building,
   'shield-check': ShieldCheck,
-  microscope: Microscope
+  microscope: Microscope,
+  database: Database,
+  rocket: Rocket
 };
 
 const Encyclopedia = () => {
