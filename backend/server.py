@@ -109,50 +109,32 @@ async def seed_expanded_content():
     from expanded_content import get_expanded_topics
     from additional_topics import get_additional_topics
     from extended_topics_p2 import get_extended_topics_part2
+    from extended_topics_p3 import get_extended_topics_part3
     from datetime import datetime, timezone
     
     try:
-        # Seed original expanded topics
-        expanded_topics = get_expanded_topics()
-        for topic in expanded_topics:
-            existing = await db.encyclopedia_topics.find_one(
-                {"topic_id": topic["topic_id"]},
-                {"_id": 0}
-            )
-            if not existing:
-                topic["created_at"] = datetime.now(timezone.utc).isoformat()
-                topic["updated_at"] = datetime.now(timezone.utc).isoformat()
-                await db.encyclopedia_topics.insert_one(topic)
-                logger.info(f"Seeded topic: {topic['title']}")
+        all_topic_sets = [
+            ("expanded", get_expanded_topics()),
+            ("additional", get_additional_topics()),
+            ("extended_p2", get_extended_topics_part2()),
+            ("extended_p3", get_extended_topics_part3())
+        ]
         
-        # Seed additional topics
-        additional_topics = get_additional_topics()
-        for topic in additional_topics:
-            existing = await db.encyclopedia_topics.find_one(
-                {"topic_id": topic["topic_id"]},
-                {"_id": 0}
-            )
-            if not existing:
-                topic["created_at"] = datetime.now(timezone.utc).isoformat()
-                topic["updated_at"] = datetime.now(timezone.utc).isoformat()
-                await db.encyclopedia_topics.insert_one(topic)
-                logger.info(f"Seeded additional topic: {topic['title']}")
+        total_seeded = 0
+        for source_name, topics in all_topic_sets:
+            for topic in topics:
+                existing = await db.encyclopedia_topics.find_one(
+                    {"topic_id": topic["topic_id"]},
+                    {"_id": 0}
+                )
+                if not existing:
+                    topic["created_at"] = datetime.now(timezone.utc).isoformat()
+                    topic["updated_at"] = datetime.now(timezone.utc).isoformat()
+                    await db.encyclopedia_topics.insert_one(topic)
+                    total_seeded += 1
         
-        # Seed extended topics part 2
-        extended_topics_p2 = get_extended_topics_part2()
-        for topic in extended_topics_p2:
-            existing = await db.encyclopedia_topics.find_one(
-                {"topic_id": topic["topic_id"]},
-                {"_id": 0}
-            )
-            if not existing:
-                topic["created_at"] = datetime.now(timezone.utc).isoformat()
-                topic["updated_at"] = datetime.now(timezone.utc).isoformat()
-                await db.encyclopedia_topics.insert_one(topic)
-                logger.info(f"Seeded extended topic: {topic['title']}")
-        
-        total_topics = len(expanded_topics) + len(additional_topics) + len(extended_topics_p2)
-        logger.info(f"Encyclopedia content seeding complete - {total_topics} topics checked")
+        total_topics = sum(len(topics) for _, topics in all_topic_sets)
+        logger.info(f"Encyclopedia seeding complete - {total_topics} topics in source, {total_seeded} new topics added")
     except Exception as e:
         logger.error(f"Error seeding content: {e}")
 
