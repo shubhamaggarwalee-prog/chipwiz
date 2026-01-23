@@ -511,3 +511,122 @@ async def search_encyclopedia(q: str, limit: int = Query(default=20, le=50)):
         })
     
     return results
+
+
+@router.get("/semantic-search")
+async def semantic_search_encyclopedia(
+    q: str, 
+    limit: int = Query(default=10, le=20),
+    difficulty: str = "intermediate"
+):
+    """
+    AI-powered semantic search across encyclopedia topics.
+    Returns ranked results with relevance scores and contextual previews.
+    """
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    import os
+    import json
+    
+    db = await get_db()
+    llm_key = os.environ.get("EMERGENT_LLM_KEY")
+    
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="AI search not configured")
+    
+    # Get all topics with content for semantic matching
+    topics = await db.encyclopedia_topics.find(
+        {},
+        {"_id": 0, "topic_id": 1, "title": 1, "slug": 1, "overview": 1, 
+         "content_beginner": 1, "category_id": 1, "applications": 1, "advantages": 1}
+    ).to_list(200)
+    
+    if not topics:
+        return {"results": [], "query": q}
+    
+    # Build topic summaries for AI ranking
+    topic_summaries = []
+    for i, topic in enumerate(topics):
+        summary = f"{i+1}. {topic['title']}: {topic['overview'][:200]}"
+        if topic.get('applications'):
+            summary += f" Applications: {', '.join(topic['applications'][:3])}"
+        topic_summaries.append(summary)
+    
+    # Use AI to rank topics by relevance to query
+    system_prompt = """You are a semiconductor knowledge search assistant. Given a user query and a list of encyclopedia topics, rank the most relevant topics.
+
+Return a JSON array of objects with this format:
+[
+  {"index": 1, "relevance": 0.95, "reason": "Direct match for query topic"},
+  {"index": 3, "relevance": 0.80, "reason": "Related technology"}
+]
+
+Rules:
+1. Return only the top 10 most relevant topics
+2. Relevance score from 0.0 to 1.0
+3. Only include topics with relevance >= 0.3
+4. Consider technical relationships, not just keyword matches
+5. Return valid JSON only, no markdown"""
+
+    user_message = f"""Query: "{q}"
+
+Available Topics:
+{chr(10).join(topic_summaries)}
+
+Return the ranked results as JSON:"""
+
+    try:
+        chat_llm = LlmChat(
+            api_key=llm_key,
+            session_id=f"search_{hash(q)}",
+            system_message=system_prompt
+        ).with_model("openai", "gpt-5.2")
+        
+        response = await chat_llm.send_message(UserMessage(text=user_message))
+        
+        # Parse AI response
+        # Extract JSON from response (handle potential markdown wrapping)
+        json_str = response.strip()
+        if json_str.startswith("```"):
+            json_str = json_str.split("```")[1]
+            if json_str.startswith("json"):
+                json_str = json_str[4:]
+        
+        rankings = json.loads(json_str)
+        
+        # Build results with topic details
+        results = []
+        for rank in rankings[:limit]:
+            idx = rank.get("index", 0) - 1
+            if 0 <= idx < len(topics):
+                topic = topics[idx]
+                
+                # Get appropriate content preview based on difficulty
+                content_key = f"content_{difficulty}"
+                content = topic.get(content_key, topic.get("content_beginner", topic.get("overview", "")))
+                preview = content[:300] if content else topic.get("overview", "")[:300]
+                
+                results.append({
+                    "topic_id": topic["topic_id"],
+                    "title": topic["title"],
+                    "slug": topic["slug"],
+                    "category_id": topic["category_id"],
+                    "relevance": rank.get("relevance", 0.5),
+                    "reason": rank.get("reason", ""),
+                    "preview": preview,
+                    "overview": topic.get("overview", "")
+                })
+        
+        return {
+            "query": q,
+            "results": results,
+            "total_topics_searched": len(topics)
+        }
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse AI ranking response: {e}")
+        # Fallback to text search
+        return await search_encyclopedia(q, limit)
+    except Exception as e:
+        logger.error(f"Semantic search error: {e}")
+        # Fallback to text search
+        return await search_encyclopedia(q, limit)
