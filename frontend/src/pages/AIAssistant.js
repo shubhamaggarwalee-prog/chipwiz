@@ -371,7 +371,11 @@ const AIAssistant = () => {
                         className={`chat-message ${message.role}`}
                         data-testid={`message-${message.role}`}
                       >
-                        <div className="whitespace-pre-wrap">{message.content}</div>
+                        {message.role === 'assistant' ? (
+                          renderMarkdown(message.content)
+                        ) : (
+                          <div className="whitespace-pre-wrap">{message.content}</div>
+                        )}
                         
                         {/* Citations */}
                         {message.citations?.length > 0 && (
