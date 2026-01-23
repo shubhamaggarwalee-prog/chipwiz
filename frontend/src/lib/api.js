@@ -24,12 +24,13 @@ export const encyclopediaApi = {
   getTopic: (slug, difficulty) => api.get(`/encyclopedia/topics/${slug}`, { params: { difficulty } }),
   getTree: () => api.get('/encyclopedia/tree'),
   search: (q) => api.get('/encyclopedia/search', { params: { q } }),
-  downloadPdf: (slug, difficulty) => `${getPdfBaseUrl()}/api/encyclopedia/topics/${slug}/pdf?difficulty=${difficulty}`
+  // For PDF downloads, use relative URL - browser will resolve with correct protocol
+  downloadPdf: (slug, difficulty) => `/api/encyclopedia/topics/${slug}/pdf?difficulty=${difficulty}`
 };
 
 // News APIs
 export const newsApi = {
-  getNews: (params) => api.get('/news', { params }),
+  getNews: (params) => api.get('/news/', { params }),
   getCategories: () => api.get('/news/categories'),
   getFeatured: () => api.get('/news/featured'),
   getDailyBrief: () => api.get('/news/daily-brief'),
@@ -52,11 +53,12 @@ export const assistantApi = {
 
 // Reports APIs
 export const reportsApi = {
-  getReports: (params) => api.get('/reports', { params }),
+  getReports: (params) => api.get('/reports/', { params }),
   getTypes: () => api.get('/reports/types'),
   getReport: (slug) => api.get(`/reports/${slug}`),
   generateReport: (topic, type) => api.post('/reports/generate', null, { params: { topic, report_type: type } }),
-  downloadPdf: (slug) => `${getPdfBaseUrl()}/api/reports/${slug}/pdf`
+  // For PDF downloads, use relative URL - browser will resolve with correct protocol
+  downloadPdf: (slug) => `/api/reports/${slug}/pdf`
 };
 
 // Subscriptions APIs
