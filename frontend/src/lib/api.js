@@ -24,6 +24,7 @@ export const encyclopediaApi = {
   getTopic: (slug, difficulty) => api.get(`/encyclopedia/topics/${slug}`, { params: { difficulty } }),
   getTree: () => api.get('/encyclopedia/tree'),
   search: (q) => api.get('/encyclopedia/search', { params: { q } }),
+  semanticSearch: (q, difficulty) => api.get('/encyclopedia/semantic-search', { params: { q, difficulty } }),
   // For PDF downloads, use relative URL - browser will resolve with correct protocol
   downloadPdf: (slug, difficulty) => `/api/encyclopedia/topics/${slug}/pdf?difficulty=${difficulty}`
 };
