@@ -28,6 +28,8 @@ SEED_CATEGORIES = [
     {"category_id": "cat_foundries", "name": "Foundries & Companies", "slug": "foundries-companies", "description": "Major semiconductor manufacturers", "order": 8, "icon": "building"},
     {"category_id": "cat_reliability", "name": "Reliability & Yield", "slug": "reliability-yield", "description": "Quality, reliability, and manufacturing yield", "order": 9, "icon": "shield-check"},
     {"category_id": "cat_testing", "name": "Testing & Metrology", "slug": "testing-metrology", "description": "Semiconductor testing and measurement", "order": 10, "icon": "microscope"},
+    {"category_id": "cat_memory", "name": "Memory Technologies", "slug": "memory-technologies", "description": "DRAM, NAND, SRAM, and emerging memory", "order": 11, "icon": "database"},
+    {"category_id": "cat_applications", "name": "Applications", "slug": "applications", "description": "AI, automotive, IoT, and other semiconductor applications", "order": 12, "icon": "rocket"},
 ]
 
 SEED_TOPICS = [
