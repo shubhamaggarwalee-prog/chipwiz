@@ -250,6 +250,9 @@ async def chat(request: ChatRequest, req: Request):
     user = await get_current_user_from_request(req)
     user_id = user["user_id"] if user else "anonymous"
     
+    # Detect if this is a comparison query
+    is_comparison, comparison_items = detect_comparison_query(request.message)
+    
     # Get or create session
     session_id = request.session_id
     if not session_id:
@@ -273,6 +276,18 @@ async def chat(request: ChatRequest, req: Request):
     # Search knowledge base for context
     context_results = await search_knowledge_base(db, request.message)
     
+    # For comparison queries, also search for each item individually
+    if is_comparison and comparison_items:
+        item1, item2 = comparison_items
+        item1_results = await search_knowledge_base(db, item1, limit=3)
+        item2_results = await search_knowledge_base(db, item2, limit=3)
+        # Merge results, avoiding duplicates
+        existing_titles = {r['title'] for r in context_results}
+        for r in item1_results + item2_results:
+            if r['title'] not in existing_titles:
+                context_results.append(r)
+                existing_titles.add(r['title'])
+    
     # Build context string
     context = ""
     citations = []
@@ -288,10 +303,16 @@ async def chat(request: ChatRequest, req: Request):
                 "url": result.get("url", "")
             })
     
-    # Initialize LLM chat
-    system_prompt = get_system_prompt(request.difficulty)
-    if context:
-        system_prompt += f"\n\nUse this context to inform your response, citing sources as [1], [2], etc.:{context}"
+    # Initialize LLM chat with appropriate system prompt
+    if is_comparison and comparison_items:
+        item1, item2 = comparison_items
+        system_prompt = get_comparison_system_prompt(item1, item2, request.difficulty)
+        if context:
+            system_prompt += f"\n\nUse this context to inform your comparison, citing sources as [1], [2], etc.:{context}"
+    else:
+        system_prompt = get_system_prompt(request.difficulty)
+        if context:
+            system_prompt += f"\n\nUse this context to inform your response, citing sources as [1], [2], etc.:{context}"
     
     chat_llm = LlmChat(
         api_key=llm_key,
@@ -299,10 +320,11 @@ async def chat(request: ChatRequest, req: Request):
         system_message=system_prompt
     ).with_model("openai", "gpt-5.2")
     
-    # Build conversation context from history
-    for msg in history[-6:]:  # Last 6 messages for context
-        if msg["role"] == "user":
-            await chat_llm.send_message(UserMessage(text=msg["content"]))
+    # Build conversation context from history (skip for comparison queries to get fresh response)
+    if not is_comparison:
+        for msg in history[-6:]:  # Last 6 messages for context
+            if msg["role"] == "user":
+                await chat_llm.send_message(UserMessage(text=msg["content"]))
     
     # Send current message
     try:
@@ -312,7 +334,7 @@ async def chat(request: ChatRequest, req: Request):
         raise HTTPException(status_code=500, detail="AI service temporarily unavailable")
     
     # Generate follow-up questions
-    follow_ups = await generate_follow_up_questions(response)
+    follow_ups = await generate_follow_up_questions(response, is_comparison=is_comparison)
     
     # Store messages
     message_id = f"msg_{uuid.uuid4().hex[:12]}"
@@ -322,6 +344,7 @@ async def chat(request: ChatRequest, req: Request):
         "role": "user",
         "content": request.message,
         "citations": [],
+        "is_comparison": is_comparison,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
     assistant_msg = {
@@ -330,6 +353,7 @@ async def chat(request: ChatRequest, req: Request):
         "role": "assistant",
         "content": response,
         "citations": citations,
+        "is_comparison": is_comparison,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
     
