@@ -139,6 +139,24 @@ Build a world-class, production-ready AI-powered Semiconductor Intelligence Plat
 - `GET /api/subscriptions` - User subscriptions
 
 ## Known Issues
-1. Mixed content warning in Emergent preview environment (dev server config)
-   - Workaround: Direct API calls work correctly
-   - Resolution: Production deployment with HTTPS throughout
+**All previously known issues have been resolved.**
+
+## Changelog
+
+### January 23, 2026
+- ✅ **FIXED: Mixed Content Error** - Resolved frontend API blocking by switching to relative URLs in axios configuration (`baseURL: '/api'`)
+- ✅ **VERIFIED: PDF Export** - Both report and encyclopedia topic PDF exports working correctly
+- ✅ **VERIFIED: Encyclopedia Seeding** - 10 categories with 19 topics loaded from expanded_content.py
+- ✅ **VERIFIED: News Scheduler** - Background job running every 6 hours, last successful run logged
+- ✅ **VERIFIED: AI Assistant** - Chat endpoint returning detailed responses with citations
+- ✅ **VERIFIED: Theme Toggle** - Dark/Light mode switching correctly
+
+### January 22, 2026
+- Initial implementation of all core features
+- Backend API with FastAPI + MongoDB
+- Frontend with React + Tailwind + Shadcn
+- Google OAuth authentication
+- Encyclopedia with 19 topics across 10 categories
+- News scraping from public RSS feeds
+- AI Assistant with GPT-5.2 integration
+- Research reports with PDF export
