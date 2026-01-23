@@ -108,6 +108,7 @@ async def seed_expanded_content():
     """Seed expanded encyclopedia topics"""
     from expanded_content import get_expanded_topics
     from additional_topics import get_additional_topics
+    from extended_topics_p2 import get_extended_topics_part2
     from datetime import datetime, timezone
     
     try:
@@ -137,7 +138,20 @@ async def seed_expanded_content():
                 await db.encyclopedia_topics.insert_one(topic)
                 logger.info(f"Seeded additional topic: {topic['title']}")
         
-        total_topics = len(expanded_topics) + len(additional_topics)
+        # Seed extended topics part 2
+        extended_topics_p2 = get_extended_topics_part2()
+        for topic in extended_topics_p2:
+            existing = await db.encyclopedia_topics.find_one(
+                {"topic_id": topic["topic_id"]},
+                {"_id": 0}
+            )
+            if not existing:
+                topic["created_at"] = datetime.now(timezone.utc).isoformat()
+                topic["updated_at"] = datetime.now(timezone.utc).isoformat()
+                await db.encyclopedia_topics.insert_one(topic)
+                logger.info(f"Seeded extended topic: {topic['title']}")
+        
+        total_topics = len(expanded_topics) + len(additional_topics) + len(extended_topics_p2)
         logger.info(f"Encyclopedia content seeding complete - {total_topics} topics checked")
     except Exception as e:
         logger.error(f"Error seeding content: {e}")
