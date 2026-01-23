@@ -71,4 +71,13 @@ export const subscriptionsApi = {
   unsubscribe: (id) => api.delete(`/subscriptions/${id}`)
 };
 
+// Preferences APIs
+export const preferencesApi = {
+  get: () => api.get('/preferences/'),
+  update: (preferences) => api.put('/preferences/', preferences),
+  patch: (key, value) => api.patch('/preferences/', { key, value }),
+  sync: () => api.get('/preferences/sync'),
+  push: (preferences) => api.post('/preferences/sync', preferences)
+};
+
 export default api;
