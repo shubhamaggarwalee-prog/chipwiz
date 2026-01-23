@@ -45,6 +45,8 @@ const Encyclopedia = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [difficulty, setDifficulty] = useState('intermediate');
   const [loading, setLoading] = useState(true);
+  const [useSemanticSearch, setUseSemanticSearch] = useState(true);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   // Fetch knowledge tree
   useEffect(() => {
@@ -93,24 +95,44 @@ const Encyclopedia = () => {
     fetchTopic();
   }, [slug, difficulty, tree]);
 
-  // Search
+  // Search - supports both keyword and semantic search
   useEffect(() => {
     const search = async () => {
       if (!searchQuery.trim()) {
         setSearchResults([]);
         return;
       }
+      
+      setSearchLoading(true);
       try {
-        const response = await encyclopediaApi.search(searchQuery);
-        setSearchResults(response.data);
+        let response;
+        if (useSemanticSearch && searchQuery.length > 10) {
+          // Use semantic search for natural language queries
+          response = await encyclopediaApi.semanticSearch(searchQuery, difficulty);
+          // Semantic search returns { results: [...] }
+          setSearchResults(response.data.results || []);
+        } else {
+          // Use keyword search for short queries
+          response = await encyclopediaApi.search(searchQuery);
+          setSearchResults(response.data);
+        }
       } catch (error) {
         console.error('Search error:', error);
+        // Fallback to regular search on error
+        try {
+          const fallback = await encyclopediaApi.search(searchQuery);
+          setSearchResults(fallback.data);
+        } catch (e) {
+          setSearchResults([]);
+        }
+      } finally {
+        setSearchLoading(false);
       }
     };
 
-    const debounce = setTimeout(search, 300);
+    const debounce = setTimeout(search, 500);
     return () => clearTimeout(debounce);
-  }, [searchQuery]);
+  }, [searchQuery, useSemanticSearch, difficulty]);
 
   const toggleCategory = (categoryId) => {
     setExpandedCategories(prev => ({
