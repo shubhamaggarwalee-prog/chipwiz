@@ -27,36 +27,116 @@ Build a world-class, production-ready AI-powered Semiconductor Intelligence Plat
 - WCAG-compliant accessibility
 - Mobile-responsive design
 
-## What's Been Implemented (January 22, 2026)
+---
 
-### Backend (FastAPI + MongoDB)
-- ✅ Authentication: Emergent Google OAuth integration
-- ✅ Encyclopedia Module: Categories, topics, search, tree structure
-- ✅ News Module: Real web scraping from public sources (RSS feeds)
-- ✅ AI Assistant: GPT-5.2 powered chat with citations
-- ✅ Reports Module: TechInsights-style research reports
-- ✅ Subscriptions: Topic-based email subscriptions with Resend
-- ✅ Background Scheduler: Automated news scraping every 6 hours
-- ✅ PDF Export: Professional PDF generation for reports and topics
+## CHANGELOG
 
-### Frontend (React + Tailwind + Shadcn)
-- ✅ Landing Page: Hero section, features, CTAs
-- ✅ Encyclopedia: 3-column IDE-style layout (tree | content | context)
-- ✅ News Page: Category filters, impact analysis
-- ✅ AI Assistant: Chat interface with example queries, difficulty selection
-- ✅ Reports Page: Report listings and detail views with PDF download
-- ✅ Subscriptions: Topic management, frequency settings
-- ✅ Dashboard: User overview, quick actions
-- ✅ Settings: Theme toggle, preferences
-- ✅ Search: Global search across encyclopedia and news
+### January 23, 2026 - P1 Features Complete
 
-### Encyclopedia Content (19 Topics)
-**Manufacturing (5 topics):**
-- DUV Lithography, EUV Lithography, Photoresist Technology
-- Plasma Etching, Thin Film Deposition
+#### AI Assistant Compare Feature ✅
+- Detects comparison queries (patterns: "Compare X vs Y", "X versus Y", "difference between X and Y")
+- Returns structured output: Summary → Comparison Table → Advantages → Manufacturing Implications → Recommendation
+- Citations for both technologies being compared
+- Comparison-specific follow-up questions
 
-**Devices (2 topics):**
-- FinFET Technology, GAAFET/Nanosheet Transistors
+#### Encyclopedia Expansion ✅
+- Expanded from 19 → 37 topics
+- Added 2 new categories:
+  - **Memory Technologies** (4 topics): DRAM, NAND Flash, SRAM, Emerging Memory
+  - **Applications** (2 topics): AI Accelerator Chips, Automotive Semiconductors
+- New topics also added to: Testing & Metrology, Manufacturing, Nodes & Scaling, Foundries
+
+#### Semantic Search ✅
+- AI-powered search using GPT-5.2
+- Natural language queries like "which packaging is best for AI chips"
+- Returns ranked results with relevance scores (0.0-1.0)
+- Each result includes reason for relevance
+- Fallback to keyword search for short queries
+
+#### User Preference Persistence ✅
+- Backend `/api/preferences/` endpoint
+- Stores: theme, difficulty, email_frequency, subscribed_topics, notification settings
+- Server sync for authenticated users
+- localStorage fallback for anonymous users
+
+#### Resend Email Integration ✅
+- Real API key configured (re_SiXJEn9m_Kgpx8PxVycdgFuryG1TJ42Gg)
+- Using onboarding@resend.dev sender (no domain verification required for testing)
+- Subscription endpoints functional
+
+#### Mixed Content Error Fixed ✅
+- Changed axios baseURL to relative `/api` instead of absolute URLs
+- Eliminated http:// calls in https:// environment
+
+### January 22, 2026 - Initial Implementation
+- Google OAuth authentication
+- Encyclopedia with 19 topics across 10 categories
+- News scraping from public RSS feeds
+- AI Assistant with GPT-5.2 and citations
+- Research Reports with PDF export
+- Background scheduler for news (6-hour intervals)
+- Full frontend with React + Tailwind + Shadcn
+
+---
+
+## Current State
+
+### Backend APIs
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/auth/google/login` | GET | Initiate Google OAuth |
+| `/api/auth/me` | GET | Get current user |
+| `/api/encyclopedia/tree` | GET | Knowledge tree |
+| `/api/encyclopedia/semantic-search` | GET | AI-powered search |
+| `/api/encyclopedia/topics/{slug}/pdf` | GET | Download topic PDF |
+| `/api/assistant/chat` | POST | AI chat with compare support |
+| `/api/reports/` | GET | List reports |
+| `/api/reports/{slug}/pdf` | GET | Download report PDF |
+| `/api/news/` | GET | List news articles |
+| `/api/subscriptions/` | GET/POST | Manage subscriptions |
+| `/api/preferences/` | GET/PUT/PATCH | User preferences |
+
+### Encyclopedia Statistics
+- **Categories:** 12
+- **Topics:** 37
+- **Categories:** Fundamentals, Devices, Manufacturing, Materials, Packaging, Design & EDA, Nodes & Scaling, Foundries & Companies, Reliability & Yield, Testing & Metrology, Memory Technologies, Applications
+
+### Test Results
+- **Backend:** 100% (15/15 tests passed)
+- **Frontend:** 100%
+- **Test file:** `/app/test_reports/iteration_4.json`
+
+---
+
+## Remaining Backlog
+
+### P1 - High Priority
+1. **Expand Encyclopedia to 100+ topics** - Currently at 37, add ~65 more
+   - Focus areas: Manufacturing processes, Advanced packaging, Materials, Nodes & scaling
+2. **Real email delivery testing** - Test actual inbox delivery with user email
+3. **AI Session continuity** - Persist last AI session for authenticated users
+
+### P2 - Medium Priority
+1. **Advanced search filters** - Filter by category, difficulty, date
+2. **Bookmarking system** - Save favorite topics/reports
+3. **Reading history** - Track user's viewed content
+4. **Offline support** - PWA capabilities
+
+### P3 - Future
+1. **Mobile app** - React Native
+2. **Premium tier** - Advanced features, API access
+3. **Team/Enterprise accounts** - Shared workspaces
+4. **Interactive diagrams** - SVG visualizations for processes
+5. **Video content** - Manufacturing process videos
+
+---
+
+## Tech Stack
+- **Backend:** FastAPI, MongoDB (Motor async driver), Python 3.11
+- **Frontend:** React 18, TailwindCSS, Shadcn/UI
+- **AI:** OpenAI GPT-5.2 via Emergent LLM Key
+- **Email:** Resend
+- **Auth:** Emergent-managed Google OAuth
 
 **Materials (3 topics):**
 - Silicon (Si) Substrates, Silicon Carbide (SiC), Gallium Nitride (GaN)
