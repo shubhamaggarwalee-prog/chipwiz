@@ -266,8 +266,8 @@ const AIAssistant = () => {
 
   const exampleQueries = [
     "Explain EUV stochastic defects at 2nm",
-    "Compare FinFET vs GAAFET yield challenges",
-    "Impact of CoWoS on AI accelerators",
+    "Compare FinFET vs GAAFET",
+    "CoWoS vs Foveros for AI accelerators",
     "What is the future of Moore's Law?"
   ];
 
