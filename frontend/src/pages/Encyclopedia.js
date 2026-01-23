@@ -157,26 +157,60 @@ const Encyclopedia = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search topics..."
+                placeholder="Ask a question or search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none dark:bg-slate-800 dark:border-slate-700"
                 data-testid="encyclopedia-search"
               />
+              {searchLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                </div>
+              )}
+            </div>
+            
+            {/* AI Search Toggle */}
+            <div className="flex items-center gap-2 mb-4 text-xs">
+              <button
+                onClick={() => setUseSemanticSearch(!useSemanticSearch)}
+                className={`px-2 py-1 rounded-full transition-colors ${
+                  useSemanticSearch 
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' 
+                    : 'bg-slate-100 text-slate-500 dark:bg-slate-800'
+                }`}
+              >
+                {useSemanticSearch ? '✨ AI Search' : 'Keyword'}
+              </button>
+              <span className="text-slate-400">
+                {useSemanticSearch ? 'Natural language' : 'Basic search'}
+              </span>
             </div>
 
             {/* Search Results */}
             {searchResults.length > 0 && (
               <div className="mb-4 p-2 bg-blue-50 rounded-lg dark:bg-blue-900/20">
-                <p className="text-xs text-blue-600 mb-2 dark:text-blue-400">Search Results</p>
-                {searchResults.slice(0, 5).map(result => (
+                <p className="text-xs text-blue-600 mb-2 dark:text-blue-400">
+                  {useSemanticSearch ? '✨ AI-Ranked Results' : 'Search Results'}
+                </p>
+                {searchResults.slice(0, 6).map(result => (
                   <Link
-                    key={result.id}
+                    key={result.topic_id || result.id}
                     to={`/encyclopedia/${result.slug}`}
                     className="block p-2 text-sm hover:bg-blue-100 rounded dark:hover:bg-blue-900/40"
                     onClick={() => setSearchQuery('')}
                   >
-                    {result.title}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{result.title}</span>
+                      {result.relevance && (
+                        <span className="text-xs text-blue-500 bg-blue-100 dark:bg-blue-900/50 px-1.5 py-0.5 rounded">
+                          {Math.round(result.relevance * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    {result.reason && (
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{result.reason}</p>
+                    )}
                   </Link>
                 ))}
               </div>
