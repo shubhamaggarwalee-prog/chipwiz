@@ -234,6 +234,42 @@ async def generate_follow_up_questions(response: str, is_comparison: bool = Fals
     return questions[:3]
 
 
+@router.get("/last-session")
+async def get_last_session(request: Request):
+    """Get user's last AI chat session for continuity"""
+    from auth import get_current_user_from_request
+    
+    db = await get_db()
+    user = await get_current_user_from_request(request)
+    
+    if not user:
+        return {"session_id": None, "message": "Not authenticated"}
+    
+    # Get user's most recent session
+    last_session = await db.chat_sessions.find_one(
+        {"user_id": user["user_id"]},
+        {"_id": 0},
+        sort=[("updated_at", -1)]
+    )
+    
+    if not last_session:
+        return {"session_id": None, "message": "No previous sessions"}
+    
+    # Get recent messages from this session
+    messages = await db.chat_messages.find(
+        {"session_id": last_session["session_id"]},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(10).to_list(10)
+    
+    return {
+        "session_id": last_session["session_id"],
+        "title": last_session.get("title", "Previous Session"),
+        "updated_at": last_session.get("updated_at"),
+        "message_count": len(messages),
+        "messages": list(reversed(messages))
+    }
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest, req: Request):
     """Send a message to the AI research assistant"""
