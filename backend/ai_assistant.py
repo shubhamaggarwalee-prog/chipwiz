@@ -270,6 +270,59 @@ async def get_last_session(request: Request):
     }
 
 
+@router.post("/quick-compare")
+async def quick_compare(topic1: str, topic2: str, difficulty: str = "intermediate"):
+    """Quick comparison between two topics from the encyclopedia"""
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
+    
+    db = await get_db()
+    llm_key = os.environ.get("EMERGENT_LLM_KEY")
+    
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+    
+    # Fetch both topics
+    t1 = await db.encyclopedia_topics.find_one({"slug": topic1}, {"_id": 0})
+    t2 = await db.encyclopedia_topics.find_one({"slug": topic2}, {"_id": 0})
+    
+    if not t1 or not t2:
+        raise HTTPException(status_code=404, detail="One or both topics not found")
+    
+    # Build context from topics
+    context = f"""
+Topic 1: {t1['title']}
+{t1.get('overview', '')}
+{t1.get(f'content_{difficulty}', t1.get('content_beginner', ''))}
+
+Topic 2: {t2['title']}
+{t2.get('overview', '')}
+{t2.get(f'content_{difficulty}', t2.get('content_beginner', ''))}
+"""
+    
+    system_prompt = get_comparison_system_prompt(t1['title'], t2['title'], difficulty)
+    system_prompt += f"\n\nUse this context:\n{context}"
+    
+    chat_llm = LlmChat(
+        api_key=llm_key,
+        session_id=f"compare_{topic1}_{topic2}",
+        system_message=system_prompt
+    ).with_model("openai", "gpt-5.2")
+    
+    try:
+        response = await chat_llm.send_message(
+            UserMessage(text=f"Compare {t1['title']} vs {t2['title']}")
+        )
+        return {
+            "topic1": {"title": t1['title'], "slug": topic1},
+            "topic2": {"title": t2['title'], "slug": topic2},
+            "comparison": response,
+            "difficulty": difficulty
+        }
+    except Exception as e:
+        logger.error(f"Quick compare error: {e}")
+        raise HTTPException(status_code=500, detail="Comparison failed")
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest, req: Request):
     """Send a message to the AI research assistant"""
