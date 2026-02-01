@@ -488,15 +488,25 @@ async def get_knowledge_tree():
 
 
 @router.get("/search")
-async def search_encyclopedia(q: str, limit: int = Query(default=20, le=50)):
-    """Search across encyclopedia"""
+async def search_encyclopedia(
+    q: str, 
+    limit: int = Query(default=20, le=50),
+    category: Optional[str] = None,
+    difficulty: Optional[str] = None
+):
+    """Search across encyclopedia with optional filters"""
     db = await get_db()
     
-    results = []
+    # Build query
+    query = {"$text": {"$search": q}}
+    if category:
+        query["category_id"] = category
+    if difficulty:
+        query["difficulty"] = difficulty
     
-    # Search topics
+    results = []
     topics = await db.encyclopedia_topics.find(
-        {"$text": {"$search": q}},
+        query,
         {"_id": 0, "score": {"$meta": "textScore"}}
     ).sort([("score", {"$meta": "textScore"})]).limit(limit).to_list(limit)
     
@@ -506,8 +516,9 @@ async def search_encyclopedia(q: str, limit: int = Query(default=20, le=50)):
             "id": topic["topic_id"],
             "title": topic["title"],
             "slug": topic["slug"],
-            "excerpt": topic["overview"][:200],
-            "category_id": topic["category_id"]
+            "excerpt": topic.get("overview", "")[:200],
+            "category_id": topic["category_id"],
+            "difficulty": topic.get("difficulty", "intermediate")
         })
     
     return results
